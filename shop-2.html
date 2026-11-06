@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>동성로 쇼핑&뷰티 루트 2</title>
+<style>
+@font-face{font-family:"Galmuri11";src:url("Galmuri11.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"Galmuri11";src:url("Galmuri11-Bold.woff2") format("woff2");font-weight:700;font-display:swap}
+:root{
+  /* layout: pixel-game world. sky backdrop, sign-board title, ROUTE / MISSION tabs, map stage, quest cards with stamp slots */
+  --sky:#BFE4FA;
+  --ink:#2B2350;
+  --paper:#FFF9F0;
+  --muted:#5E5684;
+  --gold:#FFD66B;
+  --theme:#E2557E;
+  --font-pixel:"Galmuri11","DungGeunMo","Apple SD Gothic Neo","Noto Sans KR",monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--sky);color:var(--ink);font-family:var(--font-pixel);font-size:15px;line-height:1.65}
+.sky{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.cloud{position:absolute;width:8px;height:8px;background:#fff}
+.wrap{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:22px 16px 56px;display:flex;flex-direction:column;gap:18px}
+.px{box-shadow:0 -4px 0 0 var(--ink),0 4px 0 0 var(--ink),-4px 0 0 0 var(--ink),4px 0 0 0 var(--ink),4px 8px 0 0 rgba(43,35,80,.22)}
+.sign{align-self:flex-start;position:relative;margin:22px 4px 4px;padding:14px 22px 12px;background:#FFEFC8}
+.sign h1{font-size:36px;line-height:1.05;font-weight:700;letter-spacing:-1px;text-shadow:3px 3px 0 #fff}
+.ribbon{display:inline-block;margin-top:10px;padding:2px 14px;background:var(--gold);font-weight:700;color:#2A4C9C;font-size:15px}
+.sign .pin{position:absolute;top:-30px;left:24px}
+.route-name{display:flex;flex-direction:column;gap:2px;background:var(--paper);padding:12px 14px;margin:4px}
+.route-name b{font-size:21px;color:var(--theme);line-height:1.3}
+.route-name span{font-size:13px;color:var(--muted)}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:4px}
+.tab{appearance:none;border:0;background:#fff;font:inherit;color:var(--ink);padding:12px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:1px}
+.tab b{font-size:19px}
+.tab small{font-size:12.5px;color:var(--muted)}
+.tab[aria-selected="true"]{transform:translateY(3px);background:#FFF1C9}
+.tab:focus-visible,.card:focus-visible,a:focus-visible,button:focus-visible,.mpin:focus-visible{outline:4px solid #FFB800;outline-offset:4px}
+.stage{background:#F6E7D2;padding:6px;margin:4px}
+svg#map{display:block;width:100%;height:auto;shape-rendering:crispEdges}
+.hud{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;padding:4px}
+.prog{background:#fff;padding:8px 12px;display:flex;align-items:center;gap:10px;font-weight:700}
+.bar{width:120px;height:14px;background:#E8E2F5;position:relative}
+.bar i{position:absolute;inset:0 auto 0 0;background:var(--gold);box-shadow:inset -3px 0 0 #E8B53C}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;font-weight:700;color:#fff;text-decoration:none;font-size:14px;background:var(--theme);line-height:1.35}
+.btn small{font-weight:400;font-size:12px;opacity:.9}
+ol.quests{list-style:none;display:flex;flex-direction:column;gap:34px;padding:4px}
+.card{position:relative;display:grid;grid-template-columns:1fr 92px;gap:12px;background:#fff;border:4px solid var(--c);border-radius:22px;padding:18px 14px 14px 16px;box-shadow:0 6px 0 0 color-mix(in srgb,var(--c) 35%,transparent)}
+.card.bonus{border-style:dashed}
+.card.active{background:color-mix(in srgb,var(--c) 8%,#fff)}
+.card .tagpin{position:absolute;top:-26px;left:18px}
+.card h3{display:flex;align-items:center;gap:8px;font-size:18px;line-height:1.3}
+.card .en{font-size:12.5px;color:var(--muted)}
+.row{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 6px}
+.chip{font-size:12px;padding:1px 8px;background:color-mix(in srgb,var(--c) 14%,#fff)}
+.card p{font-size:14px}
+.card p.e{font-size:13px;color:var(--muted);margin-top:2px}
+.addr .e{font-size:12px}
+.addr{font-size:12.5px;color:var(--muted);margin-top:6px;padding-left:10px;border-left:3px solid var(--c)}
+.links{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:8px}
+.links a{font-size:13px;font-weight:700;color:var(--c)}
+.phrase{margin-top:8px;padding:8px 10px;background:color-mix(in srgb,var(--c) 10%,#fff);border-left:4px solid var(--c);font-size:14px}
+.phrase .ro{font-size:12.5px;color:var(--muted)}
+.stamp{align-self:center;justify-self:end;width:86px;height:86px;border:3px dashed var(--c);border-radius:14px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;font:inherit;font-size:11px;line-height:1.2;color:var(--c);text-align:center}
+.stamp svg{width:38px;height:38px}
+.stamp.on{border-style:solid;background:color-mix(in srgb,var(--c) 16%,#fff)}
+.stamp.on .st{fill:currentColor}
+.walk{font-size:13px;color:var(--muted);padding-left:22px;margin-top:12px}
+.walk b{color:var(--theme)}
+.badge{position:absolute;top:-14px;right:18px;background:var(--gold);color:var(--ink);font-size:12px;font-weight:700;padding:1px 10px}
+footer{background:var(--paper);padding:10px 14px;font-size:12.5px;margin:4px}
+footer span{display:block;color:var(--muted)}
+[hidden]{display:none!important}
+@media (max-width:520px){.sign h1{font-size:29px}.card{grid-template-columns:1fr 74px;padding:16px 12px 12px}.stamp{width:72px;height:72px}.stamp svg{width:30px;height:30px}.stage{padding:3px}.wrap{padding-left:12px;padding-right:12px}}
+</style>
+</head>
+<body>
+<div class="sky" id="sky" aria-hidden="true"></div>
+<div class="wrap">
+  <div class="sign px">
+    <svg class="pin" width="34" height="44" viewBox="0 0 17 22" shape-rendering="crispEdges" aria-hidden="true"><path id="pinpath" d="M5 0h7v1h2v2h1v2h1v6h-1v2h-1v2h-1v2h-1v2h-1v2h-1v1h-1v-1h-1v-2h-1v-2h-1v-2h-1v-2h-1v-2h-1v-6h1v-2h1v-2h2z" fill="#2B2350"/><path d="M5 1h7v1h2v2h1v2h1v5h-1v2h-1v2h-1v2h-1v2h-1v2h-1v1h-1v-1h-1v-2h-1v-2h-1v-2h-1v-2h-1v-5h1v-2h1v-2h2z" fill="#F0565E"/><path d="M6 6h5v1h1v3h-1v1h-5v-1h-1v-3h1z" fill="#fff"/></svg>
+    <h1>Dongseong-ro</h1>
+    <span class="ribbon px">DAEGU</span>
+  </div>
+
+  <div class="route-name px"><b id="rko"></b><span id="ren"></span></div>
+
+  <div class="tabs" role="tablist">
+    <button class="tab px" role="tab" id="tab-route" data-v="route" aria-selected="true"><b>ROUTE</b><small>루트 · 4 stops</small></button>
+    <button class="tab px" role="tab" id="tab-mission" data-v="mission" aria-selected="false"><b>MISSION</b><small>미션 · 4 missions</small></button>
+  </div>
+
+  <div class="stage px" id="stage">
+    <svg id="map" role="img" aria-label="루트 지도 · Route map">
+      <g id="base"></g>
+      <polyline id="line" fill="none" stroke-dasharray="18 12" stroke-linejoin="round"/>
+      <polyline id="bline" fill="none" stroke-linejoin="round"/>
+      <g id="pins"></g>
+    </svg>
+  </div>
+
+  <div class="hud">
+    <div class="prog px"><span id="ptext">STAMP 0/4</span><span class="bar"><i id="pbar" style="width:0"></i></span></div>
+    <a class="btn px" id="gbtn" target="_blank" rel="noopener" href="#">▶ 전체 도보 길찾기 <small>Full walking route · Naver Map</small></a>
+  </div>
+
+  <ol class="quests" id="quests"></ol>
+
+  <footer class="px">도보 시간은 대략적인 값이에요. 정확한 위치와 영업시간은 네이버 지도에서 확인하세요.
+    <span>Walking times are approximate. Check exact locations and hours on Naver Map.</span></footer>
+</div>
+
+<script>
+const D={"id": "shop-2", "theme": "shop", "n": 2, "ko": "쇼핑&뷰티 루트 2", "en": "Shopping & Beauty Route 2", "stops": [{"ko": "메라키 스토어1", "en": "Meraki Store", "lat": 35.87311, "lng": 128.5927, "q": "메라키스토어 대구", "dko": "경상감영공원 근처 골목에 있는 소품숍이에요.", "den": "A small gift shop in an alley near Gyeongsang Gamyeong Park.", "hko": "영업시간 방문 전 확인", "hen": "Check hours before visiting", "approx": false, "alt": null, "lat2": null, "lng2": null, "addr": "대구 중구 경상감영1길 47 지하층", "url": "https://naver.me/FWTtOsZL", "url2": null, "addr_en": "B1, 47 Gyeongsanggamyeong 1-gil, Jung-gu, Daegu", "walk": 11}, {"ko": "대구만두 반월당점", "en": "Daegu Mandu (Banwoldang)", "lat": 35.86744, "lng": 128.59285, "q": "대구만두 중구", "dko": "약령시 근처 남성로의 만두집이에요. 만두로 가볍게 배를 채워요.", "den": "A dumpling shop on Namseong-ro near the herbal medicine market. Grab a light bite.", "hko": "영업시간 방문 전 확인", "hen": "Check hours before visiting", "approx": false, "alt": null, "lat2": null, "lng2": null, "addr": "대구 중구 남성로 55 B동 1층", "url": "https://naver.me/xYNyXi1L", "url2": null, "addr_en": "1F, Bldg B, 55 Namseong-ro, Jung-gu, Daegu", "walk": 3}, {"ko": "한방의료체험타운", "en": "Korean Medicine Experience Town", "lat": 35.86829, "lng": 128.59103, "q": "한방의료체험타운", "dko": "한방 족욕, 체질 상담, 인바디 측정 같은 한의학 체험을 해 볼 수 있어요.", "den": "Try Korean traditional medicine: herbal foot baths, body-type consultations and InBody checks.", "hko": "화–일 10:00–17:30 (월 휴무)", "hen": "Tue–Sun 10:00–17:30 (closed Mon)", "approx": false, "alt": null, "lat2": null, "lng2": null, "addr": "대구 중구 중앙대로77길 45", "url": "https://naver.me/5YoObYC2", "url2": null, "addr_en": "45 Jungang-daero 77-gil, Jung-gu, Daegu", "walk": 2}, {"ko": "마이페이보릿커피", "en": "My Favorite Coffee", "lat": 35.86739, "lng": 128.59179, "q": "마이페이보릿커피 대구", "dko": "직접 로스팅하는 2층 카페예요. 원두를 고를 수 있고 바스크 치즈케이크가 맛있어요.", "den": "A second-floor roastery café. Pick your beans and try the Basque cheesecake.", "hko": "평일 10:00–20:00 · 주말 12:00–20:00", "hen": "Weekdays 10:00–20:00 · Weekends 12:00–20:00", "approx": false, "alt": null, "lat2": null, "lng2": null, "addr": "대구 중구 남성로 47 2층", "url": "https://naver.me/xjYRT2kd", "url2": null, "addr_en": "2F, 47 Namseong-ro, Jung-gu, Daegu"}], "full": "https://naver.me/574WS8bk"};
+const COL=['#E89A2E','#8A4FBF','#4E9A3A','#3D74D6'],BON='#D9476B';
+const THEME=D.theme==='shop'?'#E2557E':'#7A4FC8';
+document.documentElement.style.setProperty('--theme',THEME);
+document.getElementById('rko').textContent=D.ko;document.getElementById('ren').textContent=D.en;
+const MIS=[
+ {ko:'대표 메뉴 시키기',en:'Order the signature menu',dko:'가게에서 가장 유명한 메뉴를 물어보고 주문해 보세요.',den:'Ask for the most famous item and order it.',p:'여기 대표 메뉴가 뭐예요?',ro:'Yeogi daepyo menyu-ga mwoyeyo?',pe:"What's your signature menu?"},
+ {ko:'사장님과 스몰토크 해보기',en:'Small talk with the owner',dko:'가게 이야기나 동네 이야기를 짧게 나눠 보세요.',den:'Have a short chat about the shop or the neighborhood.',p:'여기서 장사하신 지 얼마나 되셨어요?',ro:'Yeogiseo jangsahasin ji eolmana doesyeosseoyo?',pe:'How long have you run this place?'},
+ {ko:'거울샷 찍기',en:'Take a mirror selfie',dko:'가게 안 거울 앞에서 오늘의 나를 찍어 보세요. 찍기 전에 허락을 구해요.',den:"Snap today's look in a shop mirror. Ask permission first.",p:'여기서 사진 찍어도 돼요?',ro:'Yeogiseo sajin jjigeodo dwaeyo?',pe:'May I take a photo here?'},
+ {ko:'사장님께 추천받아보기',en:'Get a recommendation',dko:'사장님이 좋아하는 메뉴나 물건, 근처 장소를 추천받아 보세요.',den:"Ask the owner for their favorite item or a nearby spot.",p:'추천해 주실 만한 거 있어요?',ro:'Chucheonhae jusil manhan geo isseoyo?',pe:'Is there anything you recommend?'}];
+const NS='http://www.w3.org/2000/svg';
+const X=l=>(l-128.586)*90200, Y=l=>(35.875-l)*111000;
+const stops=D.stops.map((s,i)=>({...s,x:X(s.lng),y:Y(s.lat),i}));
+const bonus=D.bonus?{...D.bonus,x:X(D.bonus.lng),y:Y(D.bonus.lat)}:null;
+let alt=null;stops.forEach(s=>{if(s.lat2){alt={...s,ko:'취록 소품샵',x:X(s.lng2),y:Y(s.lat2),pi:s.i};s.ko2=s.ko;}});
+const all0=bonus?[...stops,bonus]:stops;const all=alt?[...all0,alt]:all0;
+let x0=Math.min(...all.map(s=>s.x))-170,x1=Math.max(...all.map(s=>s.x))+170,y0=Math.min(...all.map(s=>s.y))-210,y1=Math.max(...all.map(s=>s.y))+120;
+let w=x1-x0,h=y1-y0;if(w<h*1.3){const n=h*1.3;x0-=(n-w)/2;w=n}if(h<w/1.6){const n=w/1.6;y0-=(n-h)/2;h=n}
+const k=w/650;{const top=Math.min(...all.map(s=>s.y))-120*k;if(top<y0){h+=y0-top;y0=top}const bot=Math.max(...all.map(s=>s.y))+70*k;if(bot>y0+h)h=bot-y0;}
+const map=document.getElementById('map');map.setAttribute('viewBox',`${x0} ${y0} ${w} ${h}`);
+let seed=7;const rnd=()=>(seed=(seed*9301+49297)%233280)/233280;
+function R_(p,x,y,ww,hh,f,o){const e=document.createElementNS(NS,'rect');e.setAttribute('x',x);e.setAttribute('y',y);e.setAttribute('width',ww);e.setAttribute('height',hh);e.setAttribute('fill',f);if(o)e.setAttribute('opacity',o);p.appendChild(e);return e}
+function T_(p,x,y,t,sz,f,a,stroke){const e=document.createElementNS(NS,'text');e.setAttribute('x',x);e.setAttribute('y',y);e.setAttribute('font-size',sz);e.setAttribute('fill',f);e.setAttribute('font-family','Galmuri11, monospace');e.setAttribute('font-weight','700');if(a)e.setAttribute('text-anchor',a);if(stroke){e.setAttribute('stroke',stroke);e.setAttribute('stroke-width',sz*.3);e.setAttribute('paint-order','stroke')}e.textContent=t;p.appendChild(e);return e}
+const near=(x,y,d)=>all.some(s=>Math.abs(s.x-x)<d&&Math.abs(s.y-y)<d);
+const ROADS={h:[[505,24,'국채보상로'],[1132,28,'달구벌대로']],v:[[721,22,'중앙대로'],[1326,22,'공평로'],[163,20,'서성로']]};
+const DS=[[X(128.59382),Y(35.8660)],[X(128.59769),Y(35.8760)]];
+const PARKS=[[561,306,110,90,'경상감영공원'],[1063,572,140,100,'2·28공원'],[1353,666,270,210,'국채보상운동기념공원']];
+const dsx=y=>DS[0][0]+(DS[1][0]-DS[0][0])*(y-DS[0][1])/(DS[1][1]-DS[0][1]);
+const onRoad=(x,y)=>ROADS.h.some(([yy,ww])=>Math.abs(y-yy)<ww+14)||ROADS.v.some(([xx,ww])=>Math.abs(x-xx)<ww+14)||Math.abs(x-dsx(y))<32;
+function tree(p,x,y){const s=1.3;R_(p,x+6*s,y+16*s,4*s,6*s,'#8A5A33');R_(p,x+2*s,y+4*s,12*s,12*s,'#4FA34A');R_(p,x,y+8*s,16*s,6*s,'#4FA34A');R_(p,x+4*s,y,8*s,6*s,'#6CC25E');R_(p,x+4*s,y+6*s,4*s,4*s,'#86D873')}
+function bld(p,x,y){const c=['#C9D8F5','#F2C9B6','#D9CCF2','#BFE3E8'][Math.floor(rnd()*4)];const ww=30+Math.floor(rnd()*3)*10,hh=32+Math.floor(rnd()*4)*10;R_(p,x,y-hh,ww,hh,c);R_(p,x,y-hh,ww,5,'#fff',.6);for(let i=x+5;i<x+ww-5;i+=10)for(let j=y-hh+10;j<y-8;j+=12)R_(p,i,j,5,6,'#7F94C9');R_(p,x+ww,y-hh+5,5,hh-5,'#000',.12)}
+(function base(){const g=document.getElementById('base');
+ R_(g,-200,-200,2000,1500,'#F6E7D2');
+ for(let i=-2;i<24;i++)for(let j=-2;j<18;j++)R_(g,i*70+7,j*70+7,56,56,['#F3DCC0','#EED6BC','#F7E3CC','#F0E0D6'][((i+9)*7+(j+9)*3)%4]);
+ for(let i=-2;i<=24;i++)R_(g,i*70-7,-200,14,1500,'#FFFDF8');for(let j=-2;j<=18;j++)R_(g,-200,j*70-7,2000,14,'#FFFDF8');
+ ROADS.h.forEach(([y,ww])=>R_(g,-200,y-ww/2,2000,ww,'#fff'));ROADS.v.forEach(([x,ww])=>R_(g,x-ww/2,-200,ww,1500,'#fff'));{const l=document.createElementNS(NS,'line');l.setAttribute('x1',dsx(-200));l.setAttribute('y1',-200);l.setAttribute('x2',dsx(1400));l.setAttribute('y2',1400);l.setAttribute('stroke','#fff');l.setAttribute('stroke-width',20);g.appendChild(l)}
+ PARKS.forEach(([x,y,ww,hh])=>{R_(g,x-ww/2,y-hh/2,ww,hh,'#B9E09A');R_(g,x-ww/2,y-hh/2,ww,5,'#9ACC7A')});
+ for(let n=0;n<520;n++){const x=-100+Math.floor(rnd()*110)*17,y=-60+Math.floor(rnd()*75)*17;if(near(x+10,y+10,75)||onRoad(x+10,y+10))continue;const inPark=PARKS.some(([px,py,ww,hh])=>Math.abs(x-px)<ww/2&&Math.abs(y-py)<hh/2);if(inPark||rnd()<.35)tree(g,x,y);else if(rnd()<.6)bld(g,x,y+30)}
+ const fs=16*k;
+ ROADS.h.forEach(([y,ww,n])=>{if(y>y0&&y<y0+h)T_(g,x0+14*k,y+fs*.35,n,fs,'#9C8C78',null,'#fff')});
+ ROADS.v.forEach(([x,ww,n])=>{if(x>x0&&x<x0+w)T_(g,x+ww/2+6*k,y0+h-14*k,n,fs,'#9C8C78',null,'#F6E7D2')});{const yy=y0+h-14*k,xx=dsx(yy)+16*k;if(xx>x0&&xx<x0+w-40*k)T_(g,xx,yy,'동성로',fs,'#9C8C78',null,'#F6E7D2')}
+ PARKS.forEach(([x,y,ww,hh,n])=>{if(x>x0-ww/2&&x<x0+w+ww/2&&y>y0&&y<y0+h)T_(g,x,y+hh/2-8*k,n,13*k,'#3F7A2E','middle','#B9E09A')});
+ const m=[X(128.59398),Y(35.87090)];if(m[0]>x0&&m[0]<x0+w&&m[1]>y0&&m[1]<y0+h){R_(g,m[0]-13*k,m[1]-13*k,26*k,26*k,'#2E6FD8');T_(g,m[0],m[1]+6*k,'M',16*k,'#fff','middle');T_(g,m[0]+18*k,m[1]+6*k,'중앙로역',15*k,'#2E6FD8',null,'#fff')}
+ const n=document.createElementNS(NS,'g');R_(n,x0+w-38*k,y0+12*k,26*k,30*k,'#fff');T_(n,x0+w-25*k,y0+34*k,'N',19*k,'#2B2350','middle');g.appendChild(n);
+})();
+function y1Road(x){return 1160}
+const line=document.getElementById('line');line.setAttribute('stroke',THEME);line.setAttribute('stroke-width',9*k);line.setAttribute('stroke-dasharray',`${18*k} ${12*k}`);line.setAttribute('points',stops.map(s=>s.x+','+s.y).join(' '));
+if(alt){const a2=document.createElementNS(NS,'polyline');a2.setAttribute('fill','none');a2.setAttribute('stroke',THEME);a2.setAttribute('stroke-width',6*k);a2.setAttribute('stroke-dasharray',`${6*k} ${8*k}`);const p=stops[stops.length-2];a2.setAttribute('points',`${p.x},${p.y} ${alt.x},${alt.y}`);map.insertBefore(a2,document.getElementById('pins'))}
+if(bonus){const b=document.getElementById('bline');b.setAttribute('stroke',BON);b.setAttribute('stroke-width',6*k);b.setAttribute('stroke-dasharray',`${6*k} ${8*k}`);const l=stops[stops.length-1];b.setAttribute('points',`${l.x},${l.y} ${bonus.x},${bonus.y}`)}
+const PP=document.getElementById('pinpath').getAttribute('d');
+const short=s=>{let t=s.ko.replace(/\s*\(.*\)/,'').split(' · ')[0].replace(' or ',' / ');if(t.includes(' ')){const p=t.split(' ');if(/점$/.test(p[p.length-1]))t=p[0];else if(t.length>8)t=p.pop()}return t};
+const boxes=[];const pinsG=document.getElementById('pins');
+function pin(s,i,color,label){const g=document.createElementNS(NS,'g');g.setAttribute('class','mpin');g.setAttribute('tabindex','0');g.setAttribute('role','button');g.setAttribute('aria-label',`${label}. ${s.ko}`);g.style.cursor='pointer';
+ const t=short(s),fs=21*k,lw=(t.length*fs*.98)+26*k,lh=34*k;
+ const ov=(cx,yy)=>boxes.some(b=>Math.abs(b.x-cx)<(b.w+lw)/2+4*k&&Math.abs(b.y-yy)<lh+4*k)||all.some(o=>Math.abs(o.x-cx)<lw/2+26*k&&yy<o.y+6*k&&yy+lh>o.y-70*k&&!(o===s&&yy>=s.y))||(o=>false)();
+ const cands=[[s.x,s.y-60*k-lh],[s.x,s.y+12*k],[s.x+lw/2+30*k,s.y-50*k],[s.x-lw/2-30*k,s.y-50*k],[s.x,s.y-60*k-lh*2.2],[s.x,s.y+14*k+lh*1.2]];
+ let [lx,ly]=cands.find(([cx,cy])=>!ov(cx,cy))||cands[0];boxes.push({x:lx,y:ly,w:lw,h:lh});
+ g.innerHTML=`<rect x="${lx-lw/2}" y="${ly}" width="${lw}" height="${lh}" fill="#fff" stroke="${color}" stroke-width="${4*k}"/><text x="${lx}" y="${ly+lh*.7}" text-anchor="middle" font-size="${fs}" font-weight="700" font-family="Galmuri11, monospace" fill="#2B2350">${t}</text>
+ <g transform="translate(${s.x-25*k} ${s.y-66*k}) scale(${3*k})"><path d="${PP}" fill="#2B2350"/><path d="${PP}" transform="translate(1 1) scale(.88)" fill="${color}"/><rect x="5" y="5" width="7" height="6" fill="#fff"/></g>
+ <text x="${s.x}" y="${s.y-36*k}" text-anchor="middle" font-size="${18*k}" font-weight="700" font-family="Galmuri11, monospace" fill="${color}">${label}</text>`;
+ g.addEventListener('click',()=>pick(i,true));g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();pick(i,true)}});pinsG.appendChild(g)}
+stops.forEach((s,i)=>pin(s.lat2?{...s,ko:'로힐'}:s,i,COL[i],String(i+1)));if(alt)pin(alt,alt.pi,COL[alt.pi],String(alt.pi+1));
+{let nx0=x0,ny0=y0,nx1=x0+w,ny1=y0+h;boxes.forEach(b=>{nx0=Math.min(nx0,b.x-b.w/2-10*k);nx1=Math.max(nx1,b.x+b.w/2+10*k);ny0=Math.min(ny0,b.y-10*k);ny1=Math.max(ny1,b.y+b.h+10*k)});map.setAttribute('viewBox',`${nx0} ${ny0} ${nx1-nx0} ${ny1-ny0}`)}if(bonus)pin(bonus,4,BON,'+');
+(function sky(){const s=document.getElementById('sky');[[6,9],[72,5],[84,30],[14,62],[90,74],[40,92]].forEach(([l,t])=>{const c=document.createElement('div');c.className='cloud';c.style.left=l+'%';c.style.top=t+'%';c.style.boxShadow='8px 0 0 #fff,16px 0 0 #fff,24px 0 0 #fff,32px 0 0 #fff,-8px 8px 0 #fff,0 8px 0 #fff,8px 8px 0 #fff,16px 8px 0 #fff,24px 8px 0 #fff,32px 8px 0 #fff,40px 8px 0 #fff,8px -8px 0 #fff,16px -8px 0 #fff,24px -8px 0 #fff,16px -16px 0 #fff';s.appendChild(c)})})();
+const KEY='dsr-'+D.id;let st={};try{st=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}};
+const star=`<svg viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path class="st" d="M7 1h2v3h1v1h4v2h-1v1h-1v1h-1v2h1v3h-2v-1h-1v-1h-2v1h-1v1h-2v-3h1v-2h-1v-1h-1v-1h-1v-2h4v-1h1z" fill="none" stroke="currentColor" stroke-width="1"/></svg>`;
+const shop=`<svg width="26" height="22" viewBox="0 0 13 11" shape-rendering="crispEdges" aria-hidden="true"><rect x="1" y="4" width="11" height="7" fill="#2B2350"/><rect x="2" y="5" width="9" height="5" fill="#fff"/><rect x="5" y="7" width="3" height="3" fill="#7F94C9"/><rect x="0" y="1" width="13" height="4" fill="#2B2350"/><rect x="1" y="2" width="2" height="2" fill="#F0565E"/><rect x="3" y="2" width="2" height="2" fill="#fff"/><rect x="5" y="2" width="2" height="2" fill="#F0565E"/><rect x="7" y="2" width="2" height="2" fill="#fff"/><rect x="9" y="2" width="2" height="2" fill="#F0565E"/><rect x="11" y="2" width="1" height="2" fill="#fff"/></svg>`;
+const tagpin=c=>`<svg class="tagpin" width="34" height="44" viewBox="0 0 17 22" shape-rendering="crispEdges" aria-hidden="true"><path d="${PP}" fill="#2B2350"/><path d="${PP}" transform="translate(1 1) scale(.88)" fill="${c}"/><rect x="5" y="5" width="7" height="6" fill="#fff"/></svg>`;
+const nv=q=>`https://map.naver.com/p/search/${encodeURIComponent(q)}`;
+document.getElementById('gbtn').href=D.full;
+let view='route';
+function stampBtn(key,label){const on=!!st[key];return `<button class="stamp${on?' on':''}" data-k="${key}" aria-pressed="${on}" aria-label="${label}">${star}<span>${on?'CLEAR!':'도장 찍기<br>Stamp'}</span></button>`}
+function stopCard(s,i,isB){const c=isB?BON:COL[i];const links=s.url2?`<a href="${s.url}" target="_blank" rel="noopener">▶ 로힐 네이버 지도 · Rohill on Naver Map</a><a href="${s.url2}" target="_blank" rel="noopener">▶ 취록 네이버 지도 · Chwirok on Naver Map</a>`:`<a href="${s.url}" target="_blank" rel="noopener">▶ 네이버 지도에서 보기 · View on Naver Map</a>`;
+ return `<div class="card${isB?' bonus':''}" id="c-${i}" style="--c:${c}">${tagpin(c)}${isB?'<span class="badge">BONUS · 선택</span>':''}
+ <div><h3>${shop}${isB?'+':i+1}. ${s.ko}</h3><div class="en">${s.en}</div>
+ <div class="row"><span class="chip">${s.hko}</span><span class="chip">${s.hen}</span></div>
+ <p>${s.dko}</p><p class="e">${s.den}</p><div class="addr">${s.addr}<br><span class="e">${s.addr_en}</span></div><div class="links">${links}</div></div>${stampBtn('s'+i,s.ko+' 도장')}</div>`}
+function render(){document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',t.dataset.v===view));
+ const ol=document.getElementById('quests');ol.innerHTML='';
+ if(view==='route'){stops.forEach((s,i)=>{const li=document.createElement('li');li.innerHTML=stopCard(s,i,false)+(s.walk?`<div class="walk">▼ 걸어서 약 <b>${s.walk}분</b> · about ${s.walk} min walk</div>`:'');ol.appendChild(li)});
+  if(bonus){const li=document.createElement('li');li.innerHTML=`<div class="walk" style="margin:-20px 0 22px">▼ 선택 코스 · optional, 약 <b>${bonus.walkFrom}분</b> · about ${bonus.walkFrom} min</div>`+stopCard(bonus,4,true);ol.appendChild(li)}}
+ else{MIS.forEach((m,i)=>{const li=document.createElement('li');li.innerHTML=`<div class="card" style="--c:${COL[i]}">${tagpin(COL[i])}<div><h3>${i+1}. ${m.ko}</h3><div class="en">${m.en}</div><p style="margin-top:8px">${m.dko}</p><p class="e">${m.den}</p>
+  <div class="phrase">“${m.p}”<div class="ro">${m.ro}</div><div class="ro">${m.pe}</div></div></div>${stampBtn('m'+i,m.ko+' 완료')}</div>`;ol.appendChild(li)})}
+ ol.querySelectorAll('.stamp').forEach(b=>b.addEventListener('click',()=>{st[b.dataset.k]=!st[b.dataset.k];save();render()}));
+ prog()}
+function prog(){const pre=view==='route'?'s':'m',n=[0,1,2,3].filter(i=>st[pre+i]).length;document.getElementById('ptext').textContent=`${view==='route'?'STAMP':'MISSION'} ${n}/4`;document.getElementById('pbar').style.width=(n*25)+'%'}
+function pick(i,scroll){if(view!=='route'){view='route';render()}document.querySelectorAll('.card').forEach(c=>c.classList.remove('active'));const c=document.getElementById('c-'+i);if(c){c.classList.add('active');if(scroll)c.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'center'})}}
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{view=t.dataset.v;try{history.replaceState(null,'','#'+view)}catch(e){}render()}));
+if(location.hash==='#mission')view='mission';
+render();
+</script>
+</body>
+</html>
