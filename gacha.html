@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>동성로 캡슐 뽑기 · Capsule Gacha</title>
+<style>
+@font-face{font-family:"Galmuri11";src:url("Galmuri11.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"Galmuri11";src:url("Galmuri11-Bold.woff2") format("woff2");font-weight:700;font-display:swap}
+:root{
+  /* layout: pixel-game world. sign title, theme picker, gacha machine stage, capsule reveal slip */
+  --sky:#BFE4FA;--ink:#2B2350;--paper:#FFF9F0;--muted:#5E5684;--gold:#FFD66B;
+  --shop:#E2557E;--culture:#7A4FC8;--theme:#E2557E;
+  --font-pixel:"Galmuri11","Apple SD Gothic Neo","Noto Sans KR",monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--sky);color:var(--ink);font-family:var(--font-pixel);line-height:1.6}
+.sky{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.cloud{position:absolute;width:8px;height:8px;background:#fff}
+.wrap{position:relative;z-index:1;max-width:560px;margin:0 auto;padding:22px 16px 56px;display:flex;flex-direction:column;gap:18px;align-items:stretch}
+.px{box-shadow:0 -4px 0 0 var(--ink),0 4px 0 0 var(--ink),-4px 0 0 0 var(--ink),4px 0 0 0 var(--ink),4px 8px 0 0 rgba(43,35,80,.22)}
+.sign{align-self:flex-start;padding:12px 20px 10px;background:#FFEFC8;margin:4px}
+.sign h1{font-size:30px;line-height:1.1;text-shadow:3px 3px 0 #fff}
+.sign .ribbon{display:inline-block;margin-top:8px;padding:2px 12px;background:var(--gold);font-weight:700;color:#2A4C9C;font-size:14px}
+.msg{background:var(--paper);padding:12px 14px;margin:4px;font-size:14.5px}
+.msg span{display:block;color:var(--muted);font-size:12.5px}
+.step{font-weight:700;font-size:13px;color:var(--muted);margin:4px 4px -8px}
+.themes{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:4px}
+.theme{appearance:none;border:0;background:#fff;font:inherit;color:var(--ink);padding:14px 12px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:2px}
+.theme b{font-size:17px}
+.theme small{font-size:12px;color:var(--muted)}
+.theme[aria-pressed="true"]{transform:translateY(3px)}
+.theme[data-t="shop"][aria-pressed="true"]{background:#FFE1EA}
+.theme[data-t="culture"][aria-pressed="true"]{background:#EAE0FF}
+button:focus-visible,a:focus-visible{outline:4px solid #FFB800;outline-offset:4px}
+.stage{display:flex;justify-content:center;padding:6px 0 0}
+svg#machine{width:min(100%,340px);height:auto;shape-rendering:crispEdges;overflow:visible}
+#handle{transform-box:fill-box;transform-origin:center;cursor:pointer}
+#handle.spin{animation:spin .9s steps(8) 1}
+@keyframes spin{to{transform:rotate(360deg)}}
+.balls.shake{animation:shake .12s steps(2) 7}
+@keyframes shake{0%{transform:translate(0,0)}50%{transform:translate(4px,-3px)}100%{transform:translate(-4px,2px)}}
+#drop{transition:transform .5s cubic-bezier(.3,1.6,.5,1)}
+.crank{appearance:none;border:0;font:inherit;font-weight:700;font-size:18px;color:#fff;background:var(--theme);padding:14px 18px;cursor:pointer;margin:4px;display:flex;flex-direction:column;align-items:center;line-height:1.3}
+.crank small{font-weight:400;font-size:12px;opacity:.92}
+.crank[disabled]{background:#B9B3CF;cursor:not-allowed}
+.result{background:#fff;margin:4px;padding:18px 16px;border:4px solid var(--theme);border-radius:22px;display:flex;flex-direction:column;gap:8px;text-align:center}
+.result .tag{align-self:center;background:var(--gold);font-weight:700;font-size:12px;padding:1px 10px}
+.result h2{font-size:24px;color:var(--theme);line-height:1.2}
+.result .en{font-size:13px;color:var(--muted)}
+.result ol{list-style:none;display:flex;flex-direction:column;gap:4px;margin:6px 0;font-size:14.5px}
+.result ol li span{color:var(--muted);font-size:12px}
+.go{display:block;text-decoration:none;color:#fff;background:var(--theme);font-weight:700;padding:12px;font-size:16px;margin:6px 4px 0;line-height:1.35}
+.go small{display:block;font-weight:400;font-size:12px}
+.again{appearance:none;border:0;background:none;font:inherit;color:var(--muted);text-decoration:underline;cursor:pointer;font-size:13px;padding:6px}
+.open-hint{font-weight:700;fill:var(--ink)}
+.blink{animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+.pop{animation:pop .4s steps(4) 1}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+[hidden]{display:none!important}
+.home{font-size:13px;color:var(--ink);text-align:center}
+@media (prefers-reduced-motion:reduce){#handle.spin,.balls.shake,.blink,.pop{animation:none}#drop{transition:none}}
+</style>
+</head>
+<body>
+<div class="sky" id="sky" aria-hidden="true"></div>
+<div class="wrap">
+  <div class="sign px"><h1>Capsule Gacha</h1><span class="ribbon px">DONGSEONG-RO</span></div>
+  <p class="msg px">테마를 고르고 손잡이를 돌려 오늘의 골목 루트를 뽑아 보세요!
+    <span>Pick a theme, turn the handle, and get today's alley route!</span></p>
+
+  <p class="step">STEP 1 · 테마 고르기 / Choose a theme</p>
+  <div class="themes">
+    <button class="theme px" data-t="shop" aria-pressed="false"><b style="color:var(--shop)">쇼핑&amp;뷰티</b><small>Shopping &amp; Beauty</small></button>
+    <button class="theme px" data-t="culture" aria-pressed="false"><b style="color:var(--culture)">문화체험&amp;야간관광</b><small>Culture &amp; Night</small></button>
+  </div>
+
+  <p class="step">STEP 2 · 손잡이 돌리기 / Turn the handle</p>
+  <div class="stage">
+    <svg id="machine" viewBox="0 0 220 300" role="img" aria-label="가챠 머신 · Gacha machine">
+      <rect x="40" y="6" width="140" height="10" fill="#2B2350"/>
+      <rect x="30" y="14" width="160" height="128" fill="#2B2350"/>
+      <rect x="36" y="18" width="148" height="120" fill="#E6F4FD"/>
+      <rect x="44" y="22" width="20" height="8" fill="#fff" opacity=".9"/>
+      <rect x="44" y="30" width="8" height="20" fill="#fff" opacity=".9"/>
+      <g class="balls" id="balls"></g>
+      <rect x="22" y="140" width="176" height="12" fill="#2B2350"/>
+      <rect id="body" x="28" y="150" width="164" height="140" fill="var(--theme)"/>
+      <rect x="28" y="150" width="164" height="6" fill="#fff" opacity=".35"/>
+      <rect x="22" y="286" width="176" height="10" fill="#2B2350"/>
+      <rect x="44" y="168" width="70" height="26" fill="#FFF9F0"/>
+      <text x="79" y="186" text-anchor="middle" font-size="12" font-family="Galmuri11, monospace" font-weight="700" fill="#2B2350">₩ FREE</text>
+      <g id="handle" role="button" tabindex="0" aria-label="손잡이 돌리기 · Turn the handle">
+        <circle cx="152" cy="190" r="26" fill="#2B2350"/>
+        <circle cx="152" cy="190" r="21" fill="#FFD66B"/>
+        <rect x="128" y="184" width="48" height="12" fill="#2B2350"/>
+        <rect x="131" y="187" width="42" height="6" fill="#fff"/>
+      </g>
+      <rect x="60" y="222" width="100" height="56" fill="#2B2350"/>
+      <rect x="66" y="228" width="88" height="44" fill="#3B3166"/>
+      <g id="drop" style="transform:translate(0,-80px)" opacity="0">
+        <g id="dropcap" style="cursor:pointer" role="button" tabindex="-1" aria-label="캡슐 열기 · Open the capsule">
+          <rect x="100" y="234" width="20" height="32" fill="#2B2350"/><rect x="94" y="240" width="32" height="20" fill="#2B2350"/><rect x="96" y="236" width="28" height="28" fill="#2B2350"/>
+          <rect x="98" y="250" width="24" height="10" fill="#fff"/><rect x="102" y="250" width="16" height="12" fill="#fff"/>
+          <path id="capTop" d="M102 238h16v2h4v2h0v8h-24v-8h0v-2h4z" fill="#F0565E"/>
+          <rect x="100" y="240" width="6" height="4" fill="#fff" opacity=".7"/>
+        </g>
+      </g>
+      <text id="hint" x="110" y="216" stroke="#2B2350" stroke-width="3" paint-order="stroke" text-anchor="middle" font-size="11" font-family="Galmuri11, monospace" font-weight="700" fill="#fff"></text>
+    </svg>
+  </div>
+
+  <button class="crank px" id="crank" disabled>테마를 먼저 골라 주세요<small>Choose a theme first</small></button>
+
+  <div id="result" class="result" hidden></div>
+
+  <p class="home"><a href="./" style="color:var(--ink)">▶ 전체 루트 보기 · See all routes</a></p>
+</div>
+
+<script>
+const ROUTES={
+ shop:[
+  {n:1,f:'shop-1.html',stops:[['플란다스의 곰',"Flanders' Bear"],['황가야칼국수','Hwanggaya Kalguksu'],['홀리데이비지터샵','Holiday Visitor Shop'],['공주당베이커리','Gongjudang Bakery']]},
+  {n:2,f:'shop-2.html',stops:[['메라키 스토어','Meraki Store'],['대구만두','Daegu Mandu'],['한방의료체험타운','Korean Medicine Experience Town'],['마이페이보릿커피','My Favorite Coffee']]},
+  {n:3,f:'shop-3.html',stops:[['교동시장','Gyodong Market'],['노모뉴','NOMORENEW'],['카페숲','Cafe Sup'],['로힐 / 취록','Rohill / Chwirok']]}],
+ culture:[
+  {n:1,f:'culture-1.html',stops:[['계산예가','Gyesan Yega'],['태산만두','Taesan Mandu'],['스파크랜드','Spark Land'],['에이에프','af']]},
+  {n:2,f:'culture-2.html',stops:[['국채보상운동기념관','Debt Repayment Memorial Hall'],['국채보상운동기념공원','Memorial Park'],['온돌방식당','Ondolbang'],['바이닐바이브','Vinyl Vibe']]},
+  {n:3,f:'culture-3.html',stops:[['약전한방삼계탕','Yakjeon Samgyetang'],['진골목','Jingolmok'],['교동도나스','Gyodong Donuts'],['경상감영공원','Gyeongsang Gamyeong Park']]}]};
+const NAME={shop:['쇼핑&뷰티','Shopping & Beauty'],culture:['문화체험&야간관광','Culture & Night']};
+const COLORS=['#F0565E','#E89A2E','#4E9A3A','#3D74D6','#8A4FBF','#FFD66B','#E2557E'];
+const NS='http://www.w3.org/2000/svg';
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let theme=null,busy=false,picked=null,last={};
+(function sky(){const s=document.getElementById('sky');[[6,9],[72,5],[84,34],[10,64],[88,80]].forEach(([l,t])=>{const c=document.createElement('div');c.className='cloud';c.style.left=l+'%';c.style.top=t+'%';c.style.boxShadow='8px 0 0 #fff,16px 0 0 #fff,24px 0 0 #fff,32px 0 0 #fff,-8px 8px 0 #fff,0 8px 0 #fff,8px 8px 0 #fff,16px 8px 0 #fff,24px 8px 0 #fff,32px 8px 0 #fff,40px 8px 0 #fff,8px -8px 0 #fff,16px -8px 0 #fff,24px -8px 0 #fff,16px -16px 0 #fff';s.appendChild(c)})})();
+(function balls(){const g=document.getElementById('balls');let seed=3;const r=()=>(seed=(seed*9301+49297)%233280)/233280;
+ const pos=[];for(let row=0;row<5;row++)for(let col=0;col<6;col++){const x=44+col*22+(row%2)*10+r()*4,y=112-row*20-r()*4;if(x<170&&y>24)pos.push([x,y])}
+ pos.forEach(([x,y],i)=>{const c=COLORS[i%COLORS.length];const b=document.createElementNS(NS,'g');b.innerHTML=`<rect x="${x+4}" y="${y}" width="10" height="18" fill="#2B2350"/><rect x="${x}" y="${y+4}" width="18" height="10" fill="#2B2350"/><rect x="${x+2}" y="${y+2}" width="14" height="14" fill="#2B2350"/><rect x="${x+4}" y="${y+2}" width="10" height="7" fill="${c}"/><rect x="${x+2}" y="${y+4}" width="14" height="5" fill="${c}"/><rect x="${x+2}" y="${y+9}" width="14" height="5" fill="#fff"/><rect x="${x+4}" y="${y+9}" width="10" height="7" fill="#fff"/><rect x="${x+5}" y="${y+4}" width="3" height="2" fill="#fff" opacity=".85"/>`;g.appendChild(b)})})();
+const crank=document.getElementById('crank'),handle=document.getElementById('handle'),drop=document.getElementById('drop'),dropcap=document.getElementById('dropcap'),hint=document.getElementById('hint'),res=document.getElementById('result');
+function setTheme(t){theme=t;document.documentElement.style.setProperty('--theme',t==='shop'?'#E2557E':'#7A4FC8');
+ document.querySelectorAll('.theme').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===t));
+ reset();crank.disabled=false;crank.innerHTML=`손잡이 돌리기!<small>Turn the handle · ${NAME[t][1]}</small>`}
+document.querySelectorAll('.theme').forEach(b=>b.addEventListener('click',()=>{if(!busy)setTheme(b.dataset.t)}));
+function reset(){picked=null;res.hidden=true;res.innerHTML='';drop.setAttribute('opacity','0');drop.style.transform='translate(0,-80px)';hint.textContent='';hint.classList.remove('blink');document.getElementById('capTop').style.transform='';}
+const wait=ms=>new Promise(r=>setTimeout(r,reduce?0:ms));
+async function turn(){if(!theme||busy)return;busy=true;reset();crank.disabled=true;
+ const list=ROUTES[theme];let i;do{i=Math.floor(Math.random()*list.length)}while(list.length>1&&i===last[theme]);last[theme]=i;picked=list[i];
+ document.getElementById('capTop').setAttribute('fill',COLORS[Math.floor(Math.random()*COLORS.length)]);
+ handle.classList.remove('spin');void handle.getBBox();handle.classList.add('spin');
+ const b=document.getElementById('balls');b.classList.remove('shake');void b.getBBox();b.classList.add('shake');
+ await wait(950);
+ drop.setAttribute('opacity','1');drop.style.transform='translate(0,0)';
+ await wait(600);
+ hint.textContent='캡슐을 눌러 열어요! TAP';hint.classList.add('blink');dropcap.setAttribute('tabindex','0');dropcap.focus({preventScroll:true});busy=false;
+ crank.innerHTML='캡슐을 눌러 열어 보세요<small>Tap the capsule to open it</small>'}
+async function openCap(){if(!picked||busy||!res.hidden)return;busy=true;hint.classList.remove('blink');hint.textContent='';
+ document.getElementById('capTop').style.transform='translate(0,-14px)';
+ await wait(300);
+ const p=picked,c=theme==='shop'?'#E2557E':'#7A4FC8';
+ res.innerHTML=`<span class="tag">CAPSULE OPEN!</span><h2>${NAME[theme][0]} 루트 ${p.n}</h2><div class="en">${NAME[theme][1]} · Route ${p.n}</div>
+  <ol>${p.stops.map((s,k)=>`<li>${k+1}. ${s[0]} <span>${s[1]}</span></li>`).join('')}</ol>
+  <a class="go px" href="${p.f}">▶ 이 루트로 출발하기<small>Start this route</small></a>
+  <button class="again" id="again">다시 뽑기 · Draw again</button>`;
+ res.hidden=false;res.classList.remove('pop');void res.offsetWidth;res.classList.add('pop');
+ document.getElementById('again').addEventListener('click',()=>{reset();crank.disabled=false;crank.innerHTML=`손잡이 돌리기!<small>Turn the handle · ${NAME[theme][1]}</small>`;crank.focus()});
+ res.scrollIntoView({behavior:reduce?'auto':'smooth',block:'center'});
+ crank.innerHTML='루트가 나왔어요!<small>Your route is ready</small>';busy=false}
+crank.addEventListener('click',turn);
+handle.addEventListener('click',()=>{if(!crank.disabled&&res.hidden&&!picked)turn()});
+handle.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();if(!crank.disabled&&!picked)turn()}});
+dropcap.addEventListener('click',openCap);
+dropcap.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openCap()}});
+</script>
+</body>
+</html>
